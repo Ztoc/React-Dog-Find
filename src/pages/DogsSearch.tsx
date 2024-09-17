@@ -15,6 +15,7 @@ import {
   Box,
   Pagination,
   CircularProgress,
+  TableSortLabel,
 } from '@mui/material';
 
 import axiosInstance from '../utils/axiosInstance';
@@ -28,6 +29,8 @@ interface Dog {
   breed: string;
 }
 
+type Order = 'asc' | 'desc';
+
 const DogsSearch: React.FC = () => {
   const [dogs, setDogs] = useState<any[]>([]);
   const [breeds, setBreeds] = useState<string[]>([]);
@@ -36,7 +39,8 @@ const DogsSearch: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
-
+  const [orderDirection, setOrderDirection] = useState<Order>('asc');
+  const [orderBy, setOrderBy] = useState<keyof Dog>('breed');
   const fetchBreeds = async () => {
     try {
       const response = await axiosInstance.get('/dogs/breeds');
@@ -53,9 +57,10 @@ const DogsSearch: React.FC = () => {
     try {
       const response = await axiosInstance.get('/dogs/search', {
         params: {
-          breeds: selectedBreed ? [selectedBreed] : undefined,
+          breeds: selectedBreed ? [selectedBreed] : [],
           size: 10,
           from: (page - 1) * 10,
+          sort: `${orderBy}:${orderDirection}`,
         },
       });
       if (response.status === 200) {
@@ -92,13 +97,18 @@ const DogsSearch: React.FC = () => {
     if (breeds.length > 0) {
       fetchDogs();
     }
-  }, [selectedBreed, page, breeds]);
+  }, [selectedBreed, page, breeds, orderDirection]);
 
   useEffect(() => {
     if (dogs.length > 0) {
       fetchDogDetails();
     }
   }, [dogs]);
+
+  const handleSort = () => {
+    setPage(1);
+    setOrderDirection(orderDirection === 'asc' ? 'desc' : 'asc');
+  };
 
   return (
     <Box paddingX={{ xs: 0, md: 2 }} paddingY={2}>
@@ -134,7 +144,16 @@ const DogsSearch: React.FC = () => {
             <TableRow style={{ backgroundColor: '#ebebeb' }}>
               <TableCell>No</TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Breed</TableCell>
+              <TableCell>
+                {' '}
+                <TableSortLabel
+                  active={orderBy === 'breed'}
+                  direction={orderBy === 'breed' ? orderDirection : 'asc'}
+                  onClick={() => handleSort()}
+                >
+                  Breed
+                </TableSortLabel>
+              </TableCell>
               <TableCell>
                 <Typography align="center">Photo</Typography>
               </TableCell>
