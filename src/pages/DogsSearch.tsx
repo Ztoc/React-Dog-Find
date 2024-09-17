@@ -19,6 +19,8 @@ import {
 } from '@mui/material';
 
 import axiosInstance from '../utils/axiosInstance';
+import { Dialog } from '@mui/material';
+import { ItemsPerPage } from '../const/const';
 
 interface Dog {
   id: string;
@@ -40,7 +42,11 @@ const DogsSearch: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
   const [orderDirection, setOrderDirection] = useState<Order>('asc');
-  const [orderBy, setOrderBy] = useState<keyof Dog>('breed');
+  const [orderBy] = useState<keyof Dog>('breed');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [currentImage, setCurrentImage] = useState('');
+  const [itemsPerPage, setItemsPerPage] = useState(ItemsPerPage[0]); // Default items per page
+
   const fetchBreeds = async () => {
     try {
       const response = await axiosInstance.get('/dogs/breeds');
@@ -51,22 +57,29 @@ const DogsSearch: React.FC = () => {
       console.error('Error fetching breeds:', error);
     }
   };
+  const handleOpenDialog = (imageSrc: string) => {
+    setCurrentImage(imageSrc);
+    setOpenDialog(true);
+  };
 
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
   const fetchDogs = async () => {
     setLoading(true);
     try {
       const response = await axiosInstance.get('/dogs/search', {
         params: {
           breeds: selectedBreed ? [selectedBreed] : [],
-          size: 10,
-          from: (page - 1) * 10,
+          size: itemsPerPage,
+          from: (page - 1) * itemsPerPage,
           sort: `${orderBy}:${orderDirection}`,
         },
       });
       if (response.status === 200) {
         console.log(response.data);
         setDogs(response.data.resultIds);
-        setTotalPages(Math.ceil(response.data.total / 10));
+        setTotalPages(Math.ceil(response.data.total / itemsPerPage));
       }
     } catch (error) {
       console.error('Error fetching dogs:', error);
@@ -81,7 +94,6 @@ const DogsSearch: React.FC = () => {
       if (response.status === 200) {
         setDogDetails(response.data);
         setLoading(false);
-        // Update total pages based on response
       }
     } catch (error) {
       console.error('Error fetching dog details:', error);
@@ -97,7 +109,7 @@ const DogsSearch: React.FC = () => {
     if (breeds.length > 0) {
       fetchDogs();
     }
-  }, [selectedBreed, page, breeds, orderDirection]);
+  }, [selectedBreed, page, breeds, orderDirection, itemsPerPage]);
 
   useEffect(() => {
     if (dogs.length > 0) {
@@ -179,7 +191,7 @@ const DogsSearch: React.FC = () => {
                   key={dog.id}
                   style={{ backgroundColor: index % 2 ? '#f7f7f7' : '#ffffff' }}
                 >
-                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{itemsPerPage * (page - 1) + index + 1}</TableCell>
                   <TableCell>{dog.name}</TableCell>
                   <TableCell>{dog.breed}</TableCell>
                   <TableCell>
@@ -189,6 +201,7 @@ const DogsSearch: React.FC = () => {
                         justifyContent: 'center',
                         alignItems: 'center',
                         height: '100px',
+                        cursor: 'pointer',
                       }}
                     >
                       {dog.img ? (
@@ -207,6 +220,7 @@ const DogsSearch: React.FC = () => {
                           onError={(e) => {
                             e.currentTarget.src = 'images/placeholder.png';
                           }}
+                          onClick={() => handleOpenDialog(dog.img)}
                         />
                       ) : (
                         <img
@@ -224,14 +238,47 @@ const DogsSearch: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      <Box display="flex" justifyContent="center" marginTop="16px">
+
+      <Box
+        display="flex"
+        justifyContent="center"
+        marginTop="16px"
+        alignItems={'center'}
+      >
         <Pagination
           count={totalPages}
           page={page}
           onChange={(event, value) => setPage(value)}
           color="primary"
         />
+        <FormControl variant="outlined" margin="normal">
+          <InputLabel id="items-per-page-label"></InputLabel>
+          <Select
+            labelId="items-per-page-label"
+            value={itemsPerPage}
+            onChange={(e) => {
+              setItemsPerPage(e.target.value as number);
+              setPage(1);
+            }}
+          >
+            {ItemsPerPage.map((number) => (
+              <MenuItem key={number} value={number}>
+                {number}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Box>
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <img
+          src={currentImage}
+          alt="Dog"
+          style={{
+            maxWidth: '100%',
+            height: 'auto',
+          }}
+        />
+      </Dialog>
     </Box>
   );
 };
