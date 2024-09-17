@@ -51,7 +51,7 @@ const DogsSearch: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching breeds:', error);
-      toast('Error occured from the server');
+      toast.error('Error occured from the server');
     }
   };
   const handleOpenDialog = (imageSrc: string) => {
@@ -81,7 +81,7 @@ const DogsSearch: React.FC = () => {
     } catch (error) {
       console.error('Error fetching dogs:', error);
       setLoading(false);
-      toast('Error occured from the server');
+      toast.error('Error occured from the server');
     }
   };
 
@@ -96,7 +96,7 @@ const DogsSearch: React.FC = () => {
     } catch (error) {
       console.error('Error fetching dog details:', error);
       setLoading(false);
-      toast('Error occured from the server');
+      toast.error('Error occured from the server');
     }
   };
 
