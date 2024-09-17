@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
 import { useAuth } from '../Context/AuthContext';
 import axiosInstance from '../utils/axiosInstance';
+import { ToastContainer, toast } from 'react-toastify';
 
 const LoginPage: React.FC = () => {
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [error, setError] = useState<string>('');
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useAuth(); // Get the authentication function
-
+  const { setIsAuthenticated } = useAuth();
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -21,11 +21,13 @@ const LoginPage: React.FC = () => {
       });
 
       if (response.status === 200) {
-        setIsAuthenticated(true); // Set authenticated state
-        navigate('/search'); // Redirect to search gepa
+        setIsAuthenticated(true);
+        navigate('/search');
       }
     } catch (err) {
       setError('Login failed. Please check your credentials.');
+      toast('Error occured from the server');
+
       console.error(err);
     }
   };
@@ -36,8 +38,8 @@ const LoginPage: React.FC = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '100vh', // Full height of the viewport
-        backgroundColor: '#f5f5f5', // Optional: background color
+        height: '100vh',
+        backgroundColor: '#f5f5f5',
       }}
     >
       <Container maxWidth="xs">
@@ -70,6 +72,7 @@ const LoginPage: React.FC = () => {
           </Button>
         </form>
       </Container>
+      <ToastContainer />
     </Box>
   );
 };

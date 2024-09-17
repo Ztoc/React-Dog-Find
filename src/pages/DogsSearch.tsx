@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Dialog } from '@mui/material';
 import {
   FormControl,
   InputLabel,
@@ -17,35 +18,29 @@ import {
   CircularProgress,
   TableSortLabel,
 } from '@mui/material';
+import { ToastContainer, toast } from 'react-toastify';
 
 import axiosInstance from '../utils/axiosInstance';
-import { Dialog } from '@mui/material';
 import { ItemsPerPage } from '../const/const';
-
-interface Dog {
-  id: string;
-  img: string;
-  name: string;
-  age: number;
-  zip_code: string;
-  breed: string;
-}
-
-type Order = 'asc' | 'desc';
+import { Dog, Order } from '../const/type';
+import 'react-toastify/dist/ReactToastify.css';
 
 const DogsSearch: React.FC = () => {
-  const [dogs, setDogs] = useState<any[]>([]);
   const [breeds, setBreeds] = useState<string[]>([]);
+  const [dogs, setDogs] = useState<any[]>([]);
   const [selectedBreed, setSelectedBreed] = useState<string>('');
   const [dogDetails, setDogDetails] = useState<Dog[]>([]);
+
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [loading, setLoading] = useState<boolean>(false);
   const [orderDirection, setOrderDirection] = useState<Order>('asc');
   const [orderBy] = useState<keyof Dog>('breed');
+  const [itemsPerPage, setItemsPerPage] = useState(ItemsPerPage[0]);
+
   const [openDialog, setOpenDialog] = useState(false);
   const [currentImage, setCurrentImage] = useState('');
-  const [itemsPerPage, setItemsPerPage] = useState(ItemsPerPage[0]); // Default items per page
+
+  const [loading, setLoading] = useState<boolean>(false);
 
   const fetchBreeds = async () => {
     try {
@@ -55,6 +50,7 @@ const DogsSearch: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching breeds:', error);
+      toast('Error occured from the server');
     }
   };
   const handleOpenDialog = (imageSrc: string) => {
@@ -84,6 +80,7 @@ const DogsSearch: React.FC = () => {
     } catch (error) {
       console.error('Error fetching dogs:', error);
       setLoading(false);
+      toast('Error occured from the server');
     }
   };
 
@@ -98,6 +95,7 @@ const DogsSearch: React.FC = () => {
     } catch (error) {
       console.error('Error fetching dog details:', error);
       setLoading(false);
+      toast('Error occured from the server');
     }
   };
 
@@ -279,6 +277,7 @@ const DogsSearch: React.FC = () => {
           }}
         />
       </Dialog>
+      <ToastContainer />
     </Box>
   );
 };
