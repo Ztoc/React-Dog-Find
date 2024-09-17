@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axiosInstance from '../utils/axiosInstance';
 import {
   FormControl,
   InputLabel,
@@ -17,6 +16,8 @@ import {
   Pagination,
   CircularProgress,
 } from '@mui/material';
+
+import axiosInstance from '../utils/axiosInstance';
 
 interface Dog {
   id: string;
@@ -130,7 +131,7 @@ const DogsSearch: React.FC = () => {
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow>
+            <TableRow style={{ backgroundColor: '#ebebeb' }}>
               <TableCell>No</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Breed</TableCell>
@@ -145,6 +146,12 @@ const DogsSearch: React.FC = () => {
               <TableRow>
                 <TableCell colSpan={5} align="center">
                   <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : dogDetails.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  No dogs available
                 </TableCell>
               </TableRow>
             ) : (
@@ -176,15 +183,15 @@ const DogsSearch: React.FC = () => {
                             transition: 'opacity 0.5s',
                           }}
                           onLoad={(e) => {
-                            e.currentTarget.style.opacity = '1'; // Fade in the image when loaded
+                            e.currentTarget.style.opacity = '1';
                           }}
                           onError={(e) => {
-                            e.currentTarget.src = 'images/placeholder.png'; // Fallback placeholder image
+                            e.currentTarget.src = 'images/placeholder.png';
                           }}
                         />
                       ) : (
                         <img
-                          src="images/placeholder.png" // Placeholder image source
+                          src="images/placeholder.png"
                           alt="Loading..."
                           style={{ height: '100px', width: 'auto' }}
                         />

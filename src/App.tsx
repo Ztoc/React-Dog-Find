@@ -5,8 +5,8 @@ import {
   Navigate,
 } from 'react-router-dom';
 
-import DogsSearch from './pages/DogsSearch';
 import LoginPage from './pages/Login';
+import DogsSearch from './pages/DogsSearch';
 import { useAuth } from './Context/AuthContext';
 
 import './index.css';
