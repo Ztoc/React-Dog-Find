@@ -7,10 +7,10 @@ import {
 
 import LoginPage from './pages/Login';
 import DogsSearch from './pages/DogsSearch';
+
 import { useAuth } from './Context/AuthContext';
 
 import './index.css';
-import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const { isAuthenticated } = useAuth();

@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
+import { ToastContainer, toast } from 'react-toastify';
+
 import { useAuth } from '../Context/AuthContext';
 import axiosInstance from '../utils/axiosInstance';
-import { ToastContainer, toast } from 'react-toastify';
+
+import 'react-toastify/dist/ReactToastify.css';
 
 const LoginPage: React.FC = () => {
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [error, setError] = useState<string>('');
+
   const navigate = useNavigate();
   const { setIsAuthenticated } = useAuth();
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     try {
       const response = await axiosInstance.post('/auth/login', {
         name,
@@ -27,7 +31,6 @@ const LoginPage: React.FC = () => {
     } catch (err) {
       setError('Login failed. Please check your credentials.');
       toast('Error occured from the server');
-
       console.error(err);
     }
   };

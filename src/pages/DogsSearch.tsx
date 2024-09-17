@@ -23,6 +23,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import axiosInstance from '../utils/axiosInstance';
 import { ItemsPerPage } from '../const/const';
 import { Dog, Order } from '../const/type';
+
 import 'react-toastify/dist/ReactToastify.css';
 
 const DogsSearch: React.FC = () => {
@@ -99,6 +100,11 @@ const DogsSearch: React.FC = () => {
     }
   };
 
+  const handleSort = () => {
+    setPage(1);
+    setOrderDirection(orderDirection === 'asc' ? 'desc' : 'asc');
+  };
+
   useEffect(() => {
     fetchBreeds();
   }, []);
@@ -114,11 +120,6 @@ const DogsSearch: React.FC = () => {
       fetchDogDetails();
     }
   }, [dogs]);
-
-  const handleSort = () => {
-    setPage(1);
-    setOrderDirection(orderDirection === 'asc' ? 'desc' : 'asc');
-  };
 
   return (
     <Box paddingX={{ xs: 0, md: 2 }} paddingY={2}>

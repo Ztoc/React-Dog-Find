@@ -13,9 +13,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check if the cookie is present on initial load
     const checkAuth = () => {
-      // Example: Check for a specific cookie or use a more complex logic
       const cookie = document.cookie
         .split('; ')
         .find((row) => row.startsWith('fetch-access-token='));
