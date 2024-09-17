@@ -11,11 +11,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TableSortLabel,
   Typography,
   Paper,
   Box,
   Pagination,
+  CircularProgress,
 } from '@mui/material';
 
 interface Dog {
@@ -31,13 +31,11 @@ const DogsSearch: React.FC = () => {
   const [dogs, setDogs] = useState<any[]>([]);
   const [breeds, setBreeds] = useState<string[]>([]);
   const [selectedBreed, setSelectedBreed] = useState<string>('');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [orderBy, setOrderBy] = useState<keyof Dog>('name'); // Default sort by name
   const [dogDetails, setDogDetails] = useState<Dog[]>([]);
-  const [page, setPage] = useState<number>(1); // Current page for pagination
-  const [totalPages, setTotalPages] = useState<number>(1); // Total pages for pagination
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  // Fetch available breeds
   const fetchBreeds = async () => {
     try {
       const response = await axiosInstance.get('/dogs/breeds');
@@ -49,15 +47,14 @@ const DogsSearch: React.FC = () => {
     }
   };
 
-  // Fetch dogs by selected breed
   const fetchDogs = async () => {
+    setLoading(true);
     try {
       const response = await axiosInstance.get('/dogs/search', {
         params: {
           breeds: selectedBreed ? [selectedBreed] : undefined,
-          size: 10, // Number of results per page
-          from: (page - 1) * 10, // Calculate offset based on page
-          sort: `${orderBy}:${sortDirection}`, // Sort order
+          size: 10,
+          from: (page - 1) * 10,
         },
       });
       if (response.status === 200) {
@@ -67,6 +64,7 @@ const DogsSearch: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching dogs:', error);
+      setLoading(false);
     }
   };
 
@@ -76,10 +74,12 @@ const DogsSearch: React.FC = () => {
       console.log(response.data);
       if (response.status === 200) {
         setDogDetails(response.data);
+        setLoading(false);
         // Update total pages based on response
       }
     } catch (error) {
       console.error('Error fetching dog details:', error);
+      setLoading(false);
     }
   };
 
@@ -91,7 +91,7 @@ const DogsSearch: React.FC = () => {
     if (breeds.length > 0) {
       fetchDogs();
     }
-  }, [selectedBreed, page]);
+  }, [selectedBreed, page, breeds]);
 
   useEffect(() => {
     if (dogs.length > 0) {
@@ -99,25 +99,8 @@ const DogsSearch: React.FC = () => {
     }
   }, [dogs]);
 
-  // Sort dogs
-  const handleSort = (property: keyof Dog) => {
-    const isAscending = orderBy === property && sortDirection === 'asc';
-    setSortDirection(isAscending ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-  // Sorted dogs based on selected order
-  const sortedDogs = [...dogDetails].sort((a, b) => {
-    const aValue = a[orderBy];
-    const bValue = b[orderBy];
-
-    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-    return 0;
-  });
-
   return (
-    <Box>
+    <Box paddingX={{ xs: 0, md: 2 }} paddingY={2}>
       <Typography variant="h4" align="center" gutterBottom>
         Find Your Favorite Dogs
       </Typography>
@@ -127,7 +110,10 @@ const DogsSearch: React.FC = () => {
         <Select
           labelId="breed-select-label"
           value={selectedBreed}
-          onChange={(e) => setSelectedBreed(e.target.value)}
+          onChange={(e) => {
+            setSelectedBreed(e.target.value);
+            setPage(1);
+          }}
           label="Select a breed"
         >
           <MenuItem value="">
@@ -146,62 +132,80 @@ const DogsSearch: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>No</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Breed</TableCell>
               <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'name'}
-                  direction={orderBy === 'name' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('name')}
-                >
-                  Dog's Name
-                </TableSortLabel>
+                <Typography align="center">Photo</Typography>
               </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'breed'}
-                  direction={orderBy === 'breed' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('breed')}
-                >
-                  Breed
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>Photo</TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'zip_code'}
-                  direction={orderBy === 'zip_code' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('zip_code')}
-                >
-                  Location (Zip Code)
-                </TableSortLabel>
-              </TableCell>
+              <TableCell>Location</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedDogs.map((dog, index) => (
-              <TableRow key={dog.id}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{dog.name}</TableCell>
-                <TableCell>{dog.breed}</TableCell>
-                <TableCell>
-                  <img
-                    src={dog.img}
-                    alt={dog.name}
-                    style={{ width: '100px', height: 'auto' }}
-                  />
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  <CircularProgress />
                 </TableCell>
-                <TableCell>{dog.zip_code}</TableCell>
               </TableRow>
-            ))}
+            ) : (
+              dogDetails.map((dog, index) => (
+                <TableRow
+                  key={dog.id}
+                  style={{ backgroundColor: index % 2 ? '#f7f7f7' : '#ffffff' }}
+                >
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{dog.name}</TableCell>
+                  <TableCell>{dog.breed}</TableCell>
+                  <TableCell>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '100px',
+                      }}
+                    >
+                      {dog.img ? (
+                        <img
+                          src={dog.img}
+                          alt={dog.name}
+                          style={{
+                            height: '100px',
+                            width: 'auto',
+                            opacity: 0,
+                            transition: 'opacity 0.5s',
+                          }}
+                          onLoad={(e) => {
+                            e.currentTarget.style.opacity = '1'; // Fade in the image when loaded
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.src = 'images/placeholder.png'; // Fallback placeholder image
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src="images/placeholder.png" // Placeholder image source
+                          alt="Loading..."
+                          style={{ height: '100px', width: 'auto' }}
+                        />
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>{dog.zip_code}</TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
-      <Pagination
-        count={totalPages}
-        page={page}
-        onChange={(event, value) => setPage(value)}
-        color="primary"
-        style={{ marginTop: '16px' }}
-      />
+      <Box display="flex" justifyContent="center" marginTop="16px">
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(event, value) => setPage(value)}
+          color="primary"
+        />
+      </Box>
     </Box>
   );
 };
