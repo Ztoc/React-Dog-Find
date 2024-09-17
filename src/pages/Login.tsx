@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
 import { useAuth } from '../Context/AuthContext';
+import axiosInstance from '../utils/axiosInstance';
 
 const LoginPage: React.FC = () => {
   const [name, setName] = useState<string>('');
@@ -15,15 +15,14 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
-        'https://frontend-take-home-service.fetch.com/auth/login',
-        { name, email },
-        { withCredentials: true }
-      );
+      const response = await axiosInstance.post('/auth/login', {
+        name,
+        email,
+      });
 
       if (response.status === 200) {
-        setIsAuthenticated(true);
-        navigate('/search');
+        setIsAuthenticated(true); // Set authenticated state
+        navigate('/search'); // Redirect to search gepa
       }
     } catch (err) {
       setError('Login failed. Please check your credentials.');
